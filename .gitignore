@@ -1,0 +1,24 @@
+# Credentials and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Local files and generated output
+.DS_Store
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+node_modules/
+dist/
+coverage/
+*.log
+
+# Existing local planning material and prototypes.
+# Keep excluded until provenance and publication scope are reviewed.
+/TacitOS/
+/clipping/
+/hackathon-prep/
+/TacitOS-Projektunterlagen.zip
