@@ -14,3 +14,5 @@ python3 -m app.server
 Then open http://127.0.0.1:8766. Python 3.9 or later is enough. No packages are required. Put `BASETEN_API_KEY` in the ignored `.env` file to use the hackathon model `meta-models/muse-spark-open-1026`. Without that key, the rehearsal still runs and model buttons report that the key is missing.
 
 Alder Works and every order are fictional. The app does not place real orders.
+
+The recorded demo is [Missing Monday/05-demo/missing-monday-demo.mp4](Missing%20Monday/05-demo/missing-monday-demo.mp4).

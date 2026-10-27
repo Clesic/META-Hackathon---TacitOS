@@ -1,6 +1,6 @@
 # Three-minute demo script
 
-Status: shot list for the built rehearsal. Aim for 2:50–2:55. Speak only what the screen shows. The recorded question on a clean run was: “Is there an approved substitution procedure that allows P-100B for P-100?”
+Status: the browser recording is `missing-monday-demo.mp4`, 2:53, with a closing card and no spoken narration. The question in that recording was: “Is there an approved substitution procedure that covers offering P-100B for ordered P-100?”
 
 ## 0:00–0:20 — Monday without Morgan
 

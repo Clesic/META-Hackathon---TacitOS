@@ -39,3 +39,7 @@ Opened evidence can be sent to Baseten `meta-models/muse-spark-open-1026` throug
 `tools/day2_rehearsal.py` ran from an empty database. Baseten diagnosed S01 as a knowledge gap and asked whether an approved substitution procedure allows P-100B for P-100. That question did not contain the hidden rule. The expert answer was drafted into a quoted card and published only when that exact card was approved. S02 then saw the frozen card, accepted, and was graded correct and independent. S05 saw the same card, was rejected because certificate C-A is outside it, and was not accepted. Recorded spend for that run: $0.02572. An edit to a drafted card is not published until the edited wording is approved again. “I don't know” publishes no card. A case started before approval does not later inherit a new card.
 
 A later suggestion on S05, with that approved card open, returned reject because certificate C-A is outside the card. No action was saved by the suggestion. The suggestion instruction now says an order outside an approved card is a reject.
+
+## Demo recording — October 27
+
+`05-demo/missing-monday-demo.mp4` is a 2:53 browser recording of one clean session. S01 diagnosis asked whether an approved substitution procedure covers offering P-100B for ordered P-100. The expert answer was quoted into a card and approved. S02 was accepted from that card with no new expert call. S05 was rejected because certificate C-A is outside the card. Recorded spend on that database: $0.02678. The closing card restates those three outcomes. There is no spoken narration.
