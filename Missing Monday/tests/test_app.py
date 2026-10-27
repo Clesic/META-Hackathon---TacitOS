@@ -6,6 +6,7 @@ from pathlib import Path
 from urllib.request import Request,urlopen
 from urllib.error import HTTPError
 from http.server import ThreadingHTTPServer
+from app.model import ModelError
 from app.server import Store,handler,ROOT
 
 class FoundationTests(unittest.TestCase):
@@ -132,4 +133,106 @@ class FoundationTests(unittest.TestCase):
   card='\n'.join(self.store.inspect(self.sid,self.store.start(self.sid,'S02'),'approved-guidance')['content'])
   self.assertNotIn('Do not publish this.',card)
   with self.assertRaises(ValueError): self.store.review(self.sid,self.store.start(self.sid,'C01'),'No question yet.','approve')
+ def reply(self, payload, category='knowledge', question='Which condition is missing?'):
+  encoded=json.dumps(payload)
+  self.assertNotIn('accept_if', encoded)
+  self.assertNotIn('Expert-only', encoded)
+  user=json.loads(payload['messages'][1]['content'])
+  body={'category':category,'missing_distinction':'The handbook does not cover this case.','evidence_refs':[item['id'] for item in user['evidence']],'expert_question':question,'uncertainties':['The hidden rule is not in the evidence.']}
+  return {'model':'test-model','usage':{'prompt_tokens':120,'completion_tokens':40},'choices':[{'finish_reason':'stop','message':{'content':json.dumps(body)}}]}
+ def test_control_cases_cover_decision_evidence_and_permission(self):
+  checks={'C01':'accept','C02':'request_evidence','C03':'report_permission_issue','C04':'escalate'}
+  for cid, action in checks.items():
+   aid=self.store.start(self.sid,cid)
+   self.record(self.sid,aid,'event-'+cid,action,'Control-case check')
+   result=self.store.state(self.sid)['attempts'][-1]['result']
+   self.assertTrue(result['correct_action'],cid)
+   self.assertTrue(result['safe_handling'],cid)
+   self.assertEqual(result['independent_completion'],cid=='C01')
+ def test_diagnosis_asks_from_opened_evidence_only(self):
+  aid=self.store.start(self.sid,'S01')
+  with self.assertRaises(ValueError): self.store.diagnose(self.sid,aid,transport=lambda payload: self.reply(payload))
+  self.store.inspect(self.sid,aid,'handbook-v1')
+  found=self.store.diagnose(self.sid,aid,transport=lambda payload: self.reply(payload))
+  self.assertEqual(found['category'],'knowledge')
+  self.assertEqual(found['suggested_action'],'ask_expert')
+  self.assertEqual(self.store.state(self.sid)['attempts'][0]['actions'],[])
+  self.assertLess(found['spent_usd'],5)
+ def test_diagnosis_distinguishes_missing_evidence_and_permission(self):
+  for cid, category, action in (('C02','missing_case_data','request_evidence'),('C03','permission','report_permission_issue')):
+   aid=self.store.start(self.sid,cid)
+   self.store.inspect(self.sid,aid,'case-facts')
+   found=self.store.diagnose(self.sid,aid,transport=lambda payload, category=category: self.reply(payload,category,'What is missing?'))
+   self.assertEqual(found['suggested_action'],action)
+ def test_failed_diagnosis_leaves_the_attempt_unchanged(self):
+  aid=self.store.start(self.sid,'S01')
+  self.store.inspect(self.sid,aid,'handbook-v1')
+  def fail(payload):
+   raise ModelError('Meta did not respond in time. The attempt was not changed. Retry the diagnosis.')
+  with self.assertRaises(ModelError): self.store.diagnose(self.sid,aid,transport=fail)
+  self.assertIsNone(self.store.state(self.sid)['attempts'][0]['diagnosis'])
+  self.assertEqual(self.store.spent(),0)
+ def test_budget_stops_before_another_call(self):
+  aid=self.store.start(self.sid,'S01')
+  self.store.inspect(self.sid,aid,'handbook-v1')
+  with self.store.db() as db:
+   db.execute('INSERT INTO api_spend(created,model,cost_usd) VALUES (?,?,?)',('2026-10-27T00:00:00Z','test',5))
+  calls=[]
+  with self.assertRaises(ModelError): self.store.diagnose(self.sid,aid,transport=lambda payload: calls.append(payload))
+  self.assertEqual(calls,[])
+ def model_reply(self, payload, body):
+  self.assertNotIn('accept_if', json.dumps(payload))
+  self.assertEqual(payload['model'], 'meta-models/muse-spark-open-1026')
+  return {'model':'meta-models/muse-spark-open-1026','usage':{'prompt_tokens':20,'completion_tokens':20},'choices':[{'finish_reason':'stop','message':{'content':json.dumps(body)}}]}
+ def test_draft_quotes_the_expert_and_does_not_publish(self):
+  aid=self.store.start(self.sid,'S01')
+  self.store.inspect(self.sid,aid,'handbook-v1')
+  self.store.record(self.sid,aid,'ask-draft','ask_expert','Which revision is covered?',['handbook-v1'])
+  answer='P-100B is allowed only on R2 with certificate C-B.'
+  found=self.store.draft_card(self.sid,aid,answer,transport=lambda payload: self.model_reply(payload,{'card':'Apply only the stated exception.','quote':'only on R2 with certificate C-B.','abstain_when':'the certificate is different'}))
+  self.assertIn('only on R2 with certificate C-B.', found['card'])
+  self.assertEqual(self.store.state(self.sid)['summary']['approved_guidance'],0)
+  with self.assertRaises(ModelError):
+   self.store.draft_card(self.sid,aid,answer,transport=lambda payload: self.model_reply(payload,{'card':'Invented.','quote':'a rule the expert did not say','abstain_when':''}))
+ def test_suggestion_does_not_save_the_decision(self):
+  aid=self.store.start(self.sid,'S02')
+  self.store.inspect(self.sid,aid,'handbook-v1')
+  found=self.store.suggest(self.sid,aid,transport=lambda payload: self.model_reply(payload,{'action':'ask_expert','reason':'No approved card covers this order.','evidence_refs':['handbook-v1']}))
+  self.assertEqual(found['action'],'ask_expert')
+  self.assertEqual(self.store.state(self.sid)['attempts'][-1]['actions'],[])
+  from app.model import recommend_messages
+  instruction=recommend_messages({'case_id':'S05'},[])[0]['content']
+  self.assertIn('outside its exception', instruction)
+  self.assertIn('action is reject', instruction)
+ def test_an_edit_is_not_published_until_approved_again(self):
+  aid=self.store.start(self.sid,'S01')
+  self.store.inspect(self.sid,aid,'handbook-v1')
+  self.store.record(self.sid,aid,'ask-edit','ask_expert','Which revision is covered?',['handbook-v1'])
+  answer='Only revision R2 with certificate C-B is covered.'
+  self.store.draft_card(self.sid,aid,answer,transport=lambda payload: self.model_reply(payload,{'card':'Only the stated revision.','quote':'Only revision R2 with certificate C-B is covered.','abstain_when':'other certificates'}))
+  first=self.store.review(self.sid,aid,'A different condition.','approve')
+  self.assertFalse(first['published'])
+  self.assertTrue(first['needs_review'])
+  self.assertEqual(self.store.state(self.sid)['summary']['approved_guidance'],0)
+  second=self.store.review(self.sid,aid,'A different condition.','approve')
+  self.assertTrue(second['published'])
+ def test_not_knowing_publishes_no_card(self):
+  aid=self.store.start(self.sid,'S01')
+  self.store.inspect(self.sid,aid,'case-facts')
+  self.store.record(self.sid,aid,'ask-unknown','ask_expert','What is the rule?',['case-facts'])
+  result=self.store.review(self.sid,aid,"I don't know",'abstain')
+  self.assertTrue(result['abstained'])
+  self.assertFalse(result['published'])
+  card='\n'.join(self.store.inspect(self.sid,self.store.start(self.sid,'S02'),'approved-guidance')['content'])
+  self.assertIn('No expert-approved',card)
+ def test_a_later_card_does_not_change_an_earlier_attempt(self):
+  early=self.store.start(self.sid,'S02')
+  aid=self.store.start(self.sid,'S01')
+  self.store.inspect(self.sid,aid,'handbook-v1')
+  self.store.record(self.sid,aid,'ask-freeze','ask_expert','Which revision?',['handbook-v1'])
+  self.store.review(self.sid,aid,'Only R2 with C-B.','approve')
+  before='\n'.join(self.store.inspect(self.sid,early,'approved-guidance')['content'])
+  after='\n'.join(self.store.inspect(self.sid,self.store.start(self.sid,'S03'),'approved-guidance')['content'])
+  self.assertIn('No expert-approved',before)
+  self.assertIn('Only R2 with C-B.',after)
 if __name__=='__main__':unittest.main()

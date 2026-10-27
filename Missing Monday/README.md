@@ -4,7 +4,7 @@
 
 Missing Monday rehearses that absence, finds the knowledge the team is missing, asks the expert focused questions, and checks whether someone else can now do the work.
 
-Created October 26, 2026. Status updated October 27: the local rehearsal can record a stuck attempt, accept a typed expert answer, and show that approved card on a later case in the same family. See [startup instructions](RUNNING.md). A Meta model is not connected, and no real expert study or product efficacy results exist.
+Created October 26, 2026. Status updated October 27: a stalled attempt can be diagnosed by Meta, which asks one focused question and classifies a knowledge gap, missing evidence, or a permission problem. Typed expert approval still carries that card to a later case. Diagnosis spend is capped at $5. See [startup instructions](RUNNING.md). No real expert study or product efficacy results exist.
 
 ## Start here
 

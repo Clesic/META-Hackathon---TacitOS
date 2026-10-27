@@ -11,6 +11,6 @@ cd "Missing Monday"
 python3 -m app.server
 ```
 
-Then open http://127.0.0.1:8766. Python 3.9 or later is enough. No packages and no API key are required for this rehearsal.
+Then open http://127.0.0.1:8766. Python 3.9 or later is enough. No packages are required. Put `BASETEN_API_KEY` in the ignored `.env` file to use the hackathon model `meta-models/muse-spark-open-1026`. Without that key, the rehearsal still runs and model buttons report that the key is missing.
 
-Alder Works and every order are fictional. The app does not call a model yet, and it does not place real orders.
+Alder Works and every order are fictional. The app does not place real orders.

@@ -6,7 +6,7 @@ October 27–November 3, 2026. Prepared October 26. All clock times use America/
 
 By November 3, have a working, reproducible Missing Monday demo, measured results, a public-ready repository, a three-minute video and an accurate submission package. Aim to submit that day after the user confirms publication and submission. Keep November 4 as buffer; the previously checked official deadline is 18:00 Pacific. Recheck the official portal before submitting.
 
-Assumption: one builder and six focused hours per day, about 48 hours total. Breaks are additional. This is a scope-controlled plan, not a promise that every feature will fit. As of October 27, the local rehearsal, typed expert approval and fresh-case card retrieval exist. The Meta diagnosis call in Day 1 is still open. See [build status](build-status.md).
+Assumption: one builder and six focused hours per day, about 48 hours total. Breaks are additional. This is a scope-controlled plan, not a promise that every feature will fit. As of October 27, Day 1 diagnosis and the Day 2 capture-to-transfer gate have both run on Baseten. See [build status](build-status.md) and [day2-results.json](day2-results.json).
 
 The essential story is fixed: a successor gets stuck, the expert supplies the missing condition, the system creates approved guidance, and a fresh case demonstrates transfer. A boundary case must also show that the guidance does not permit an incorrect action.
 

@@ -1,0 +1,15 @@
+{
+  "provider_model": "meta-models/muse-spark-open-1026",
+  "spent_usd": 0.02572,
+  "diagnosis_category": "knowledge",
+  "diagnosis_action": "ask_expert",
+  "diagnosis_question": "Is there an approved substitution procedure that allows P-100B for P-100?",
+  "hidden_rule_leaked_into_question": [],
+  "card_published": true,
+  "fresh_case_sees_card": true,
+  "fresh_case_correct": true,
+  "fresh_case_independent": true,
+  "boundary_sees_card": true,
+  "boundary_action": "reject",
+  "boundary_not_accepted": true
+}

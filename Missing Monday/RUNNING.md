@@ -37,7 +37,7 @@ Unsubmitted notes, selected action, gap category and citations are saved per att
 
 ## Boundaries
 
-No Meta or Baseten calls are implemented and no credits are consumed. The expert question and the approved card are typed by the person at the keyboard. The app does not draft them. Correct practice decisions do not establish knowledge transfer or expertise capture.
+Model calls use Baseten `meta-models/muse-spark-open-1026`. **Diagnose why this stalled** asks one question. **Suggest the next step** recommends an action from the opened evidence and any approved card. **Draft the card** turns the expert’s own words into a quotable card. None of these calls sees the hidden rulebook, and none of them saves or approves anything. Spend for this database is capped at $5. A failed call leaves the attempt unchanged.
 
 Only three static assets are served. The handbook is explicitly selected; hidden expert rules and oracle files are not served. The server reads expected outcomes locally for synthetic grading. These development cases are public and must not be presented as a private held-out benchmark.
 

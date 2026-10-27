@@ -2,6 +2,10 @@
 
 Updated October 26, 2026 from the user's stated resources. These are reported entitlements, not verified current balances. No credit has been spent, account connected or deployment created by this planning update.
 
+## Decision on October 27
+
+Product model calls use the hackathon Baseten model `meta-models/muse-spark-open-1026` and the reported $100 credit. The public model id does not accept this key. Cursor remains the editor. ChatGPT is not an application runtime. Meta stays available only when `MODEL_PROVIDER=meta`. The first diagnosis session stays inside a $5 local cap.
+
 ## Use now: Meta API — $150 credit
 
 Primary runtime for gap diagnosis, focused expert questions, guidance extraction and successor assistance. Keep one model and one provider in the first implementation. Verify the exact model, account mode, current pricing and remaining credits before live work. Record provider, model, usage and estimated cost for every run; reconcile against the provider's billing view.

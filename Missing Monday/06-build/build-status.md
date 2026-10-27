@@ -28,4 +28,14 @@ Verification: 14 automated tests pass; JavaScript syntax check passes; browser t
 
 A successor question in the knowledge or unknown category can now be approved or rejected. Approval stores the typed answer as the next version for that case family and shows it, with the original question, when a later case in the same session opens approved guidance. Rejection stores no card. Another session cannot read the card. The case list is grouped into rehearsal, fresh, boundary and handbook cases, and the three stage labels follow the open attempt.
 
-Verification: 16 automated tests pass, including same-session retrieval, a second approval being refused, and a rejected answer staying unpublished. The model is still not called.
+Verification: 16 automated tests pass, including same-session retrieval, a second approval being refused, and a rejected answer staying unpublished.
+
+## Meta diagnosis — October 27
+
+Opened evidence can be sent to Baseten `meta-models/muse-spark-open-1026` through `POST /api/diagnose`. The response must cite an opened source and return one question. Knowledge maps to asking the expert, missing case data maps to requesting evidence, and a permission problem maps to reporting access. Spend is stored in the local database and stops at $5. A failed call does not add an action. The hidden rulebook is not included in the request.
+
+## Day 2 rehearsal — October 27
+
+`tools/day2_rehearsal.py` ran from an empty database. Baseten diagnosed S01 as a knowledge gap and asked whether an approved substitution procedure allows P-100B for P-100. That question did not contain the hidden rule. The expert answer was drafted into a quoted card and published only when that exact card was approved. S02 then saw the frozen card, accepted, and was graded correct and independent. S05 saw the same card, was rejected because certificate C-A is outside it, and was not accepted. Recorded spend for that run: $0.02572. An edit to a drafted card is not published until the edited wording is approved again. “I don't know” publishes no card. A case started before approval does not later inherit a new card.
+
+A later suggestion on S05, with that approved card open, returned reject because certificate C-A is outside the card. No action was saved by the suggestion. The suggestion instruction now says an order outside an approved card is a reject.

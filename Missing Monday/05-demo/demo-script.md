@@ -1,6 +1,6 @@
 # Three-minute demo script
 
-Status: recording plan, not a description of completed functionality. Aim for 2:50–2:55. Use actual output and measured values only.
+Status: shot list for the built rehearsal. Aim for 2:50–2:55. Speak only what the screen shows. The recorded question on a clean run was: “Is there an approved substitution procedure that allows P-100B for P-100?”
 
 ## 0:00–0:20 — Monday without Morgan
 
