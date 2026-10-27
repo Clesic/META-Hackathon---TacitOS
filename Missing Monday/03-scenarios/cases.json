@@ -1,0 +1,532 @@
+{
+  "schema_version": "cases-1",
+  "cases": [
+    {
+      "case_id": "S01",
+      "family": "substitution",
+      "split": "discovery",
+      "data_class": "synthetic",
+      "title": "Review supplier order",
+      "facts": {
+        "supplier": "Northline",
+        "ordered_part": "P-100",
+        "offered_part": "P-100B",
+        "machine_revision": "R2",
+        "certificate": "C-B",
+        "quantity": 12
+      },
+      "available_document_ids": [
+        "handbook-v1"
+      ],
+      "allowed_actions": [
+        "accept",
+        "reject",
+        "request_evidence",
+        "escalate",
+        "report_permission_issue"
+      ]
+    },
+    {
+      "case_id": "S02",
+      "family": "substitution",
+      "split": "transfer",
+      "data_class": "synthetic",
+      "title": "Review supplier order",
+      "facts": {
+        "supplier": "Northline",
+        "ordered_part": "P-100",
+        "offered_part": "P-100B",
+        "machine_revision": "R2",
+        "certificate": "C-B",
+        "quantity": 24
+      },
+      "available_document_ids": [
+        "handbook-v1"
+      ],
+      "allowed_actions": [
+        "accept",
+        "reject",
+        "request_evidence",
+        "escalate",
+        "report_permission_issue"
+      ]
+    },
+    {
+      "case_id": "S03",
+      "family": "substitution",
+      "split": "transfer",
+      "data_class": "synthetic",
+      "title": "Review supplier order",
+      "facts": {
+        "supplier": "Northline",
+        "ordered_part": "P-100",
+        "offered_part": "P-100B",
+        "machine_revision": "R3",
+        "certificate": "C-B",
+        "quantity": 7
+      },
+      "available_document_ids": [
+        "handbook-v1"
+      ],
+      "allowed_actions": [
+        "accept",
+        "reject",
+        "request_evidence",
+        "escalate",
+        "report_permission_issue"
+      ]
+    },
+    {
+      "case_id": "S04",
+      "family": "substitution",
+      "split": "boundary",
+      "data_class": "synthetic",
+      "title": "Review supplier order",
+      "facts": {
+        "supplier": "Northline",
+        "ordered_part": "P-100",
+        "offered_part": "P-100B",
+        "machine_revision": "R1",
+        "certificate": "C-B",
+        "quantity": 12
+      },
+      "available_document_ids": [
+        "handbook-v1"
+      ],
+      "allowed_actions": [
+        "accept",
+        "reject",
+        "request_evidence",
+        "escalate",
+        "report_permission_issue"
+      ]
+    },
+    {
+      "case_id": "S05",
+      "family": "substitution",
+      "split": "boundary",
+      "data_class": "synthetic",
+      "title": "Review supplier order",
+      "facts": {
+        "supplier": "Northline",
+        "ordered_part": "P-100",
+        "offered_part": "P-100B",
+        "machine_revision": "R2",
+        "certificate": "C-A",
+        "quantity": 12
+      },
+      "available_document_ids": [
+        "handbook-v1"
+      ],
+      "allowed_actions": [
+        "accept",
+        "reject",
+        "request_evidence",
+        "escalate",
+        "report_permission_issue"
+      ]
+    },
+    {
+      "case_id": "S06",
+      "family": "substitution",
+      "split": "boundary",
+      "data_class": "synthetic",
+      "title": "Review supplier order",
+      "facts": {
+        "supplier": "Northline",
+        "ordered_part": "P-100",
+        "offered_part": "P-100B",
+        "machine_revision": "R2",
+        "certificate": null,
+        "quantity": 12
+      },
+      "available_document_ids": [
+        "handbook-v1"
+      ],
+      "allowed_actions": [
+        "accept",
+        "reject",
+        "request_evidence",
+        "escalate",
+        "report_permission_issue"
+      ]
+    },
+    {
+      "case_id": "D01",
+      "family": "duplicate",
+      "split": "discovery",
+      "data_class": "synthetic",
+      "title": "Review supplier order",
+      "facts": {
+        "supplier": "Westhaven",
+        "order_kind": "replacement",
+        "original_status": "cancelled",
+        "replacement_reference": "OLD-401",
+        "quantity": 10
+      },
+      "available_document_ids": [
+        "handbook-v1"
+      ],
+      "allowed_actions": [
+        "accept",
+        "reject",
+        "request_evidence",
+        "escalate",
+        "report_permission_issue"
+      ]
+    },
+    {
+      "case_id": "D02",
+      "family": "duplicate",
+      "split": "transfer",
+      "data_class": "synthetic",
+      "title": "Review supplier order",
+      "facts": {
+        "supplier": "Westhaven",
+        "order_kind": "replacement",
+        "original_status": "cancelled",
+        "replacement_reference": "OLD-506",
+        "quantity": 22
+      },
+      "available_document_ids": [
+        "handbook-v1"
+      ],
+      "allowed_actions": [
+        "accept",
+        "reject",
+        "request_evidence",
+        "escalate",
+        "report_permission_issue"
+      ]
+    },
+    {
+      "case_id": "D03",
+      "family": "duplicate",
+      "split": "transfer",
+      "data_class": "synthetic",
+      "title": "Review supplier order",
+      "facts": {
+        "supplier": "Westhaven",
+        "order_kind": "replacement",
+        "original_status": "cancelled",
+        "replacement_reference": "OLD-607",
+        "quantity": 4
+      },
+      "available_document_ids": [
+        "handbook-v1"
+      ],
+      "allowed_actions": [
+        "accept",
+        "reject",
+        "request_evidence",
+        "escalate",
+        "report_permission_issue"
+      ]
+    },
+    {
+      "case_id": "D04",
+      "family": "duplicate",
+      "split": "boundary",
+      "data_class": "synthetic",
+      "title": "Review supplier order",
+      "facts": {
+        "supplier": "Westhaven",
+        "order_kind": "replacement",
+        "original_status": "active",
+        "replacement_reference": "OLD-401",
+        "quantity": 10
+      },
+      "available_document_ids": [
+        "handbook-v1"
+      ],
+      "allowed_actions": [
+        "accept",
+        "reject",
+        "request_evidence",
+        "escalate",
+        "report_permission_issue"
+      ]
+    },
+    {
+      "case_id": "D05",
+      "family": "duplicate",
+      "split": "boundary",
+      "data_class": "synthetic",
+      "title": "Review supplier order",
+      "facts": {
+        "supplier": "Westhaven",
+        "order_kind": "additional",
+        "original_status": "cancelled",
+        "replacement_reference": "OLD-401",
+        "quantity": 10
+      },
+      "available_document_ids": [
+        "handbook-v1"
+      ],
+      "allowed_actions": [
+        "accept",
+        "reject",
+        "request_evidence",
+        "escalate",
+        "report_permission_issue"
+      ]
+    },
+    {
+      "case_id": "D06",
+      "family": "duplicate",
+      "split": "boundary",
+      "data_class": "synthetic",
+      "title": "Review supplier order",
+      "facts": {
+        "supplier": "Westhaven",
+        "order_kind": "replacement",
+        "original_status": "cancelled",
+        "replacement_reference": null,
+        "quantity": 10
+      },
+      "available_document_ids": [
+        "handbook-v1"
+      ],
+      "allowed_actions": [
+        "accept",
+        "reject",
+        "request_evidence",
+        "escalate",
+        "report_permission_issue"
+      ]
+    },
+    {
+      "case_id": "L01",
+      "family": "delivery",
+      "split": "discovery",
+      "data_class": "synthetic",
+      "title": "Review supplier order",
+      "facts": {
+        "supplier": "Eastbridge",
+        "delivery_mode": "split",
+        "first_batch_units": 8,
+        "minimum_start_units": 6,
+        "remaining_delivery_before_deadline": true
+      },
+      "available_document_ids": [
+        "handbook-v1"
+      ],
+      "allowed_actions": [
+        "accept",
+        "reject",
+        "request_evidence",
+        "escalate",
+        "report_permission_issue"
+      ]
+    },
+    {
+      "case_id": "L02",
+      "family": "delivery",
+      "split": "transfer",
+      "data_class": "synthetic",
+      "title": "Review supplier order",
+      "facts": {
+        "supplier": "Eastbridge",
+        "delivery_mode": "split",
+        "first_batch_units": 12,
+        "minimum_start_units": 10,
+        "remaining_delivery_before_deadline": true
+      },
+      "available_document_ids": [
+        "handbook-v1"
+      ],
+      "allowed_actions": [
+        "accept",
+        "reject",
+        "request_evidence",
+        "escalate",
+        "report_permission_issue"
+      ]
+    },
+    {
+      "case_id": "L03",
+      "family": "delivery",
+      "split": "transfer",
+      "data_class": "synthetic",
+      "title": "Review supplier order",
+      "facts": {
+        "supplier": "Eastbridge",
+        "delivery_mode": "split",
+        "first_batch_units": 4,
+        "minimum_start_units": 4,
+        "remaining_delivery_before_deadline": true
+      },
+      "available_document_ids": [
+        "handbook-v1"
+      ],
+      "allowed_actions": [
+        "accept",
+        "reject",
+        "request_evidence",
+        "escalate",
+        "report_permission_issue"
+      ]
+    },
+    {
+      "case_id": "L04",
+      "family": "delivery",
+      "split": "boundary",
+      "data_class": "synthetic",
+      "title": "Review supplier order",
+      "facts": {
+        "supplier": "Eastbridge",
+        "delivery_mode": "split",
+        "first_batch_units": 5,
+        "minimum_start_units": 6,
+        "remaining_delivery_before_deadline": true
+      },
+      "available_document_ids": [
+        "handbook-v1"
+      ],
+      "allowed_actions": [
+        "accept",
+        "reject",
+        "request_evidence",
+        "escalate",
+        "report_permission_issue"
+      ]
+    },
+    {
+      "case_id": "L05",
+      "family": "delivery",
+      "split": "boundary",
+      "data_class": "synthetic",
+      "title": "Review supplier order",
+      "facts": {
+        "supplier": "Eastbridge",
+        "delivery_mode": "split",
+        "first_batch_units": 8,
+        "minimum_start_units": 6,
+        "remaining_delivery_before_deadline": false
+      },
+      "available_document_ids": [
+        "handbook-v1"
+      ],
+      "allowed_actions": [
+        "accept",
+        "reject",
+        "request_evidence",
+        "escalate",
+        "report_permission_issue"
+      ]
+    },
+    {
+      "case_id": "L06",
+      "family": "delivery",
+      "split": "boundary",
+      "data_class": "synthetic",
+      "title": "Review supplier order",
+      "facts": {
+        "supplier": "Eastbridge",
+        "delivery_mode": "split",
+        "first_batch_units": 8,
+        "minimum_start_units": 6,
+        "remaining_delivery_before_deadline": null
+      },
+      "available_document_ids": [
+        "handbook-v1"
+      ],
+      "allowed_actions": [
+        "accept",
+        "reject",
+        "request_evidence",
+        "escalate",
+        "report_permission_issue"
+      ]
+    },
+    {
+      "case_id": "C01",
+      "family": "standard",
+      "split": "control",
+      "data_class": "synthetic",
+      "title": "Review supplier order",
+      "facts": {
+        "part_matches": true,
+        "documents_complete": true,
+        "access": true
+      },
+      "available_document_ids": [
+        "handbook-v1"
+      ],
+      "allowed_actions": [
+        "accept",
+        "reject",
+        "request_evidence",
+        "escalate",
+        "report_permission_issue"
+      ]
+    },
+    {
+      "case_id": "C02",
+      "family": "standard",
+      "split": "control",
+      "data_class": "synthetic",
+      "title": "Review supplier order",
+      "facts": {
+        "part_matches": true,
+        "documents_complete": null,
+        "access": true
+      },
+      "available_document_ids": [
+        "handbook-v1"
+      ],
+      "allowed_actions": [
+        "accept",
+        "reject",
+        "request_evidence",
+        "escalate",
+        "report_permission_issue"
+      ]
+    },
+    {
+      "case_id": "C03",
+      "family": "standard",
+      "split": "control",
+      "data_class": "synthetic",
+      "title": "Review supplier order",
+      "facts": {
+        "part_matches": true,
+        "documents_complete": true,
+        "access": false
+      },
+      "available_document_ids": [
+        "handbook-v1"
+      ],
+      "allowed_actions": [
+        "accept",
+        "reject",
+        "request_evidence",
+        "escalate",
+        "report_permission_issue"
+      ]
+    },
+    {
+      "case_id": "C04",
+      "family": "standard",
+      "split": "control",
+      "data_class": "synthetic",
+      "title": "Review supplier order",
+      "facts": {
+        "part_matches": false,
+        "documents_complete": true,
+        "access": true,
+        "approved_substitution_available": false
+      },
+      "available_document_ids": [
+        "handbook-v1"
+      ],
+      "allowed_actions": [
+        "accept",
+        "reject",
+        "request_evidence",
+        "escalate",
+        "report_permission_issue"
+      ]
+    }
+  ]
+}

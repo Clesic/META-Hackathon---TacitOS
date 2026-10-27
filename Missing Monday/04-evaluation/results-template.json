@@ -1,0 +1,28 @@
+{
+  "status": "not_run",
+  "schema_version": "results-1",
+  "fixture_hashes": {},
+  "model": null,
+  "prompt_versions": {},
+  "actor_type": null,
+  "condition": null,
+  "expert_minutes": null,
+  "attempts": [],
+  "metrics": {
+    "independent_completion": {
+      "numerator": null,
+      "denominator": null
+    },
+    "incorrect_actions": {
+      "numerator": null,
+      "denominator": null
+    },
+    "safe_handling": {
+      "numerator": null,
+      "denominator": null
+    }
+  },
+  "limitations": [
+    "No Missing Monday evaluation has been run."
+  ]
+}

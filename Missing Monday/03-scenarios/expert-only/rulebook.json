@@ -1,0 +1,64 @@
+{
+  "schema_version": "rules-1",
+  "data_class": "synthetic",
+  "warning": "Expert-only. Never send this file to learner, gap analyst, or public client.",
+  "rules": [
+    {
+      "rule_id": "R-SUB",
+      "family": "substitution",
+      "expert_answer": "For Northline, P-100B may replace P-100 only on machine revisions R2 or R3, and only with certificate C-B. Reject other revisions or a different certificate. If the revision or certificate is missing, request it before deciding. This rule says nothing about other suppliers or part mappings.",
+      "scope": {
+        "supplier": "Northline",
+        "ordered_part": "P-100",
+        "offered_part": "P-100B"
+      },
+      "required": [
+        "machine_revision",
+        "certificate"
+      ],
+      "accept_if": {
+        "machine_revision": [
+          "R2",
+          "R3"
+        ],
+        "certificate": "C-B"
+      }
+    },
+    {
+      "rule_id": "R-DUP",
+      "family": "duplicate",
+      "expert_answer": "For Westhaven, accept a replacement order only when it is explicitly a replacement, the original is cancelled and the replacement reference is present. Reject if the original remains active or this is an additional order. Request missing status or reference before deciding. Other suppliers need separate guidance.",
+      "scope": {
+        "supplier": "Westhaven"
+      },
+      "required": [
+        "order_kind",
+        "original_status",
+        "replacement_reference"
+      ],
+      "accept_if": {
+        "order_kind": "replacement",
+        "original_status": "cancelled",
+        "replacement_reference": "nonempty"
+      }
+    },
+    {
+      "rule_id": "R-DEL",
+      "family": "delivery",
+      "expert_answer": "For Eastbridge split deliveries, accept only if the first batch meets the stated minimum needed to start work and the rest will arrive before the deadline. Reject if either known condition fails. If batch size, minimum or delivery timing is missing, request that evidence. This does not cover other suppliers or delivery modes.",
+      "scope": {
+        "supplier": "Eastbridge",
+        "delivery_mode": "split"
+      },
+      "required": [
+        "first_batch_units",
+        "minimum_start_units",
+        "remaining_delivery_before_deadline"
+      ],
+      "accept_if": {
+        "first_batch_units": ">= minimum_start_units",
+        "remaining_delivery_before_deadline": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+.env
+.env.*
+!.env.example
+runs/
+recordings/
+backups/
+*.sqlite
+*.sqlite3
+*.db
+__pycache__/
+.venv/
+node_modules/
+.DS_Store

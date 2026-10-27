@@ -1,0 +1,56 @@
+const $=id=>document.getElementById(id);
+function stored(key){try{return localStorage.getItem(key);}catch{return null;}}
+function remember(key,value){try{localStorage.setItem(key,value);return true;}catch{return false;}}
+let sid=stored('mm-session'),state,active,selectedId=stored('mm-active'),pending=null,working=false;
+const draftsKey=()=>`mm-draft:${sid}:${active?.id}`;
+function draft(){try{return JSON.parse(stored(draftsKey())||'{}');}catch{return {};}}
+function saveDraft(){if(!active||active.result)return;const d={reason:$('reason').value,action:$('action').value,category:$('category').value,refs:[...$('citations').querySelectorAll('input:checked')].map(x=>x.value),pending,expert:$('expert-answer').value};const saved=remember(draftsKey(),JSON.stringify(d));$('draft-status').textContent=saved?'Draft saved on this device.':'Draft could not be saved on this device. Keep this tab open.';}
+function categoryVisibility(){const show=['ask_expert','escalate'].includes($('action').value);$('category').hidden=!show;$('category-label').hidden=!show;}
+
+function error(e){$('error').textContent=e.message;$('error').hidden=false;}
+async function api(path,body){const res=await fetch(path,{method:body?'POST':'GET',headers:{'Content-Type':'application/json',...(sid?{'X-Session-ID':sid}:{})},...(body?{body:JSON.stringify(body)}:{})});const data=await res.json();if(!res.ok){const e=new Error(data.error||'Request failed');e.status=res.status;throw e;}return data;}
+function text(tag,value){const n=document.createElement(tag);n.textContent=value;return n;}
+async function refresh(){state=await api('/api/state');render();}
+async function busy(button,fn){if(working)return;working=true;document.querySelectorAll('button,select,textarea,input').forEach(x=>x.disabled=true);$('error').hidden=true;try{await fn();}catch(e){error(e);}finally{working=false;document.querySelectorAll('button,select,textarea,input').forEach(x=>x.disabled=false);}}
+function clean(){for(const input of $('citations').querySelectorAll('input'))input.checked=false;pending=null;$('reason').value='';$('document').hidden=true;}
+function fillCases(selected){const groups=[];for(const c of state.cases){let group=groups.find(item=>item.family===c.family);if(!group)groups.push(group={family:c.family,cases:[]});group.cases.push(c);}$('case').replaceChildren(...groups.map(group=>{const label=document.createElement('optgroup');label.label=state.family_labels[group.family]||group.family;label.append(...group.cases.map(c=>{const option=text('option',c.label);option.value=c.id;return option;}));return label;}));if(selected)$('case').value=selected;}
+function stageFor(attempt){if(!attempt)return 'rehearse';if(attempt.case.split==='transfer'||attempt.case.split==='boundary')return 'retest';if(attempt.gaps.some(gap=>gap.status==='open'&&(gap.category==='knowledge'||gap.category==='unknown')))return 'capture';return 'rehearse';}
+function render(){
+ const choice=$('case').value;fillCases(choice);
+ $('handbook').replaceChildren(...state.handbook.map(s=>text('li',s)));
+ $('guidance-count').textContent=state.summary.approved_guidance?`${state.summary.approved_guidance} expert card${state.summary.approved_guidance===1?'':'s'} approved in this session.`:'Version 1 · No expert-approved guidance yet.';
+ active=state.attempts.find(a=>a.id===selectedId)||state.attempts.at(-1);selectedId=active?.id;remember('mm-active',selectedId||'');
+ $('empty').hidden=!!active;$('mission').hidden=!active;$('facts').replaceChildren();$('evidence-list').replaceChildren();$('result').textContent='';$('decision').hidden=!active||!!active.result;$('gap-panel').hidden=!active?.gaps.length;$('gaps').replaceChildren();$('capture').hidden=true;$('fresh').hidden=true;
+ const savedDraft=active?draft():{};pending=savedDraft.pending||null;const checked=new Set(savedDraft.refs||[]);$('reason').value=savedDraft.reason||'';$('expert-answer').value=savedDraft.expert||'';$('action').value=savedDraft.action||'ask_expert';$('category').value=savedDraft.category||'knowledge';categoryVisibility();$('draft-status').textContent=savedDraft.reason?'Draft restored from this device.':'';$('citations').replaceChildren(text('legend','Which opened sources support your next step?'));
+ const stage=stageFor(active);for(const item of $('stages').querySelectorAll('[data-stage]')){item.classList.toggle('current',item.dataset.stage===stage);item.classList.toggle('done',item.dataset.stage==='rehearse'&&state.summary.attempts>0||item.dataset.stage==='capture'&&state.summary.approved_guidance>0);}
+ if(active){
+  $('title').textContent=`${state.split_labels[active.case.split]||'Order'} ${active.case.case_id}`;
+  if(active.case.split==='transfer'||active.case.split==='boundary'){$('fresh').hidden=false;$('fresh').textContent=active.case.split==='transfer'?'Fresh order in the same family. Use only the handbook and guidance approved in this session.':'Boundary order. Approved guidance from this session is available. It may not cover this order.';}
+  for(const[k,v]of Object.entries(active.case.facts))$('facts').append(text('dt',k.replaceAll('_',' ')),text('dd',v===null?'Not provided':String(v)));
+  $('evidence-list').append(text('h3','1. Inspect the available evidence'));
+  for(const e of active.evidence){
+   const viewed=active.inspected.includes(e.id),button=text('button',`${viewed?'✓ Opened':'Open'} · ${e.title}`);button.className='evidence-button secondary';
+   button.onclick=()=>busy(button,async()=>{const doc=await api('/api/inspect',{attempt_id:active.id,evidence_id:e.id});await refresh();$('document-title').textContent=doc.title;$('document-content').replaceChildren(...doc.content.map(x=>text('li',x)));$('document').hidden=false;});$('evidence-list').append(button);
+   if(viewed){const label=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.value=e.id;input.checked=checked.has(e.id);label.append(input,document.createTextNode(e.title));$('citations').append(label);}
+  }
+  $('checkpoint').textContent=active.inspected.length?'2. Explain your next step and cite the evidence you opened. Opening a source records exposure, not understanding.':'Open a source above before recording a decision. Check the exception guidance if the handbook does not cover this order.';
+  if(active.result){const r=active.result;$('result').append(text('strong','Practice debrief'),text('p',r.independent_completion?'Your action matches the synthetic case requirements, without a recorded expert request. This is a practice outcome—not proof of transfer.':r.correct_action?'Your next step matches the case requirements. The task was not independently completed.':r.safe_handling?'You safely paused the task. It remains unresolved; requesting help does not count as completion.':r.paused?'The task was paused, but this was not the appropriate next step for the available evidence. It does not count as successful handling.':'Your decision does not meet this case’s requirements. Revisit the evidence and the limits of the handbook.'));
+   const last=active.actions.at(-1);$('result').append(text('p',`Your decision: ${last.action.replaceAll('_',' ')}. Reason: ${last.reason}`));
+  }
+  for(const g of active.gaps){const d=document.createElement('div');d.className='gap';const label={open:'Open',approved:'Approved for later cases',rejected:'Rejected'}[g.status]||g.status;d.append(text('strong',g.category.replaceAll('_',' ')),text('p',g.question),text('small',label));$('gaps').append(d);}
+  const openGap=active.gaps.find(gap=>gap.status==='open'&&(gap.category==='knowledge'||gap.category==='unknown'));
+  if(openGap){$('capture').hidden=false;$('capture-question').textContent=openGap.question;}
+ }
+ $('summary').replaceChildren(...[['Submitted attempts',state.summary.completed],['Independent completions',state.summary.independent],['Open requests',state.summary.open_gaps],['Approved cards',state.summary.approved_guidance]].map(([label,n])=>{const d=document.createElement('div');d.className='metric';d.append(text('strong',n),text('span',label));return d;}));
+ $('history').replaceChildren(...state.attempts.slice().reverse().map(a=>{const button=text('button',`${a.case.case_id} · ${a.status.replaceAll('_',' ')} · ${a.actions.length} steps`);button.className='secondary';button.setAttribute('aria-pressed',String(a.id===selectedId));button.onclick=()=>{selectedId=a.id;clean();render();};return button;}));
+ $('timeline').replaceChildren();if(active){$('timeline').append(text('h3',`Recorded steps · ${active.case.case_id}`));for(const a of active.actions){const d=document.createElement('div');d.className='trail';d.append(text('strong',a.action.replaceAll('_',' ')),text('p',a.reason),text('small',`${new Date(a.created).toLocaleString()} · Sources: ${a.evidence_refs.join(', ')||'None recorded (earlier attempt)'}`));$('timeline').append(d);}if(!active.actions.length)$('timeline').append(text('p','No decision recorded yet.'));}
+}
+$('start').onclick=()=>busy($('start'),async()=>{selectedId=(await api('/api/attempts',{case_id:$('case').value})).attempt_id;clean();await refresh();});
+$('new').onclick=()=>busy($('new'),async()=>{if(!confirm('Start a new session? Existing attempts remain saved locally.'))return;sid=(await api('/api/sessions',{})).session_id;remember('mm-session',sid);selectedId=null;clean();await refresh();});
+$('decision').onsubmit=e=>{e.preventDefault();busy($('save'),async()=>{const refs=[...$('citations').querySelectorAll('input:checked')].map(x=>x.value);if(!refs.length)throw new Error('Open and select at least one source before saving.');const payload={attempt_id:active.id,action:$('action').value,reason:$('reason').value,evidence_refs:refs,category:$('category').value};const signature=JSON.stringify(payload);if(!pending||pending.signature!==signature)pending={signature,id:crypto.randomUUID()};saveDraft();await api('/api/actions',{...payload,id:pending.id});pending=null;remember(draftsKey(),'{}');await refresh();$('reason').value='';});};
+$('decision').addEventListener('input',saveDraft);$('decision').addEventListener('change',()=>{categoryVisibility();saveDraft();});
+async function review(decision){if(!active)return;await api('/api/guidance',{attempt_id:active.id,answer:$('expert-answer').value,decision});$('expert-answer').value='';saveDraft();await refresh();}
+$('approve').onclick=()=>busy($('approve'),()=>review('approve'));
+$('reject').onclick=()=>busy($('reject'),()=>review('reject'));
+$('expert-answer').addEventListener('input',saveDraft);
+(async()=>{try{if(!sid){sid=(await api('/api/sessions',{})).session_id;remember('mm-session',sid);}try{await refresh();}catch(e){if(e.status!==404)throw e;sid=(await api('/api/sessions',{})).session_id;remember('mm-session',sid);selectedId=null;await refresh();error(new Error('The previous session is no longer available in this database. A new session is ready.'));}}catch(e){error(e);}})();

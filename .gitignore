@@ -15,10 +15,16 @@ node_modules/
 dist/
 coverage/
 *.log
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+/.local-backups/
+**/runs/
 
-# Existing local planning material and prototypes.
-# Keep excluded until provenance and publication scope are reviewed.
-/TacitOS/
+# Local material pending a separate publication review.
+# The demo is created October 26; this exclusion is not a pre-event classification.
+/TacitOS/demo-app/
 /clipping/
 /hackathon-prep/
 /TacitOS-Projektunterlagen.zip
