@@ -3,37 +3,11 @@ from pathlib import Path
 import collections
 import json
 import re
+import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-
-def oracle(case):
-    f = case['facts']
-    family = case['family']
-    if family == 'standard':
-        if not f.get('access'):
-            return 'report_permission_issue'
-        if f.get('documents_complete') is not True:
-            return 'request_evidence'
-        return 'accept' if f.get('part_matches') else 'escalate'
-    if family == 'substitution':
-        if (f.get('supplier'), f.get('ordered_part'), f.get('offered_part')) != ('Northline', 'P-100', 'P-100B'):
-            return 'escalate'
-        if f.get('machine_revision') is None or f.get('certificate') is None:
-            return 'request_evidence'
-        return 'accept' if f['machine_revision'] in ('R2', 'R3') and f['certificate'] == 'C-B' else 'reject'
-    if family == 'duplicate':
-        if f.get('supplier') != 'Westhaven':
-            return 'escalate'
-        if any(f.get(k) in (None, '') for k in ('order_kind', 'original_status', 'replacement_reference')):
-            return 'request_evidence'
-        return 'accept' if f['order_kind'] == 'replacement' and f['original_status'] == 'cancelled' else 'reject'
-    if family == 'delivery':
-        if f.get('supplier') != 'Eastbridge' or f.get('delivery_mode') != 'split':
-            return 'escalate'
-        if any(f.get(k) is None for k in ('first_batch_units', 'minimum_start_units', 'remaining_delivery_before_deadline')):
-            return 'request_evidence'
-        return 'accept' if f['first_batch_units'] >= f['minimum_start_units'] and f['remaining_delivery_before_deadline'] is True else 'reject'
-    raise ValueError(f'Unknown family: {family}')
+sys.path.insert(0, str(ROOT))
+from app.grade import grade as oracle
 
 def validate():
     cases = json.loads((ROOT/'03-scenarios/cases.json').read_text())['cases']
@@ -60,6 +34,8 @@ def validate():
         if splits != {'discovery':1,'transfer':2,'boundary':3}: errors.append(f'{family}: wrong split coverage')
     links = 0
     for p in ROOT.rglob('*.md'):
+        if any(part in {'.venv', '.git', 'node_modules'} for part in p.relative_to(ROOT).parts):
+            continue
         for target in re.findall(r'\[[^\]]*\]\(([^)]+)\)', p.read_text()):
             if '://' in target or target.startswith('#'): continue
             target = target.split('#')[0]

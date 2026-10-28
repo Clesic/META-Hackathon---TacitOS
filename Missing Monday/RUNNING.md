@@ -37,9 +37,9 @@ Unsubmitted notes, selected action, gap category and citations are saved per att
 
 ## Boundaries
 
-Model calls use Baseten `meta-models/muse-spark-open-1026`. **Diagnose why this stalled** asks one question. **Suggest the next step** recommends an action from the opened evidence and any approved card. **Draft the card** turns the expert’s own words into a quotable card. None of these calls sees the hidden rulebook, and none of them saves or approves anything. Spend for this database is capped at $5. A failed call leaves the attempt unchanged.
+Model calls use Baseten `meta-models/muse-spark-open-1026`. **Diagnose why this stalled** asks one question. **Suggest the next step** recommends an action from the opened evidence and any approved card. **Draft the card** turns the expert’s own words into a quotable card. **Break the card** proposes two or three harder orders from the approved substitution card, then grades them locally. None of these calls sees the hidden rulebook. Diagnose, suggest, and break do not approve a card. A failed attack opens a tighter draft and leaves the previous card approved until that new wording is approved. Spend for this database is capped at $5. A failed call leaves the saved rehearsal unchanged.
 
-Only three static assets are served. The handbook is explicitly selected; hidden expert rules and oracle files are not served. The server reads expected outcomes locally for synthetic grading. These development cases are public and must not be presented as a private held-out benchmark.
+The page, script, stylesheet, and favicon are the only files served. The handbook is explicitly selected; hidden expert rules and oracle files are not served. The server reads expected outcomes locally for synthetic grading. These development cases are public and must not be presented as a private held-out benchmark.
 
 ## Design decision
 

@@ -1,10 +1,16 @@
 """Meta diagnosis calls. The key stays in memory and is never returned to the browser."""
+from __future__ import annotations
+
 import json
+import logging
 import os
 import ssl
+import time
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
+
+log = logging.getLogger('missingmonday.model')
 
 BUDGET_USD = 5.0
 INPUT_USD_PER_MILLION = 1.25
@@ -42,17 +48,37 @@ def _parse_env(path):
 def _value(found, name):
     return os.environ.get(name, '').strip() or found.get(name, '')
 
-def runtime():
+_ENV_NAMES = ('MODEL_PROVIDER', 'MODEL_API_KEY', 'META_MODEL', 'BASETEN_API_KEY', 'BASETEN_MODEL')
+_RUNTIME_CACHE: dict = {'token': None, 'value': None}
+
+def _load_runtime():
     found = {}
     for path in ENV_PATHS:
         found.update({key: value for key, value in _parse_env(path).items() if value})
     provider = _value(found, 'MODEL_PROVIDER').lower() or 'baseten'
     if provider == 'meta':
-        return {'provider': 'meta', 'label': 'Meta', 'key': _value(found, 'MODEL_API_KEY'), 'model': _value(found, 'META_MODEL') or 'muse-spark-1.3', 'url': 'https://api.meta.ai/v1/chat/completions', 'missing': 'MODEL_API_KEY is not set. Add it to .env. No call was made.'}
-    return {'provider': 'baseten', 'label': 'Baseten', 'key': _value(found, 'BASETEN_API_KEY'), 'model': _value(found, 'BASETEN_MODEL') or 'meta-models/muse-spark-open-1026', 'url': 'https://inference.baseten.co/v1/chat/completions', 'missing': 'BASETEN_API_KEY is not set. Add it to .env. No call was made.'}
+        key = _value(found, 'MODEL_API_KEY')
+        missing = '' if key else 'MODEL_API_KEY is not set. Add it to .env. No call was made.'
+        return {'provider': 'meta', 'label': 'Meta', 'key': key, 'model': _value(found, 'META_MODEL') or 'muse-spark-1.3', 'url': 'https://api.meta.ai/v1/chat/completions', 'missing': missing}
+    key = _value(found, 'BASETEN_API_KEY')
+    missing = '' if key else 'BASETEN_API_KEY is not set. Add it to .env. No call was made.'
+    return {'provider': 'baseten', 'label': 'Baseten', 'key': key, 'model': _value(found, 'BASETEN_MODEL') or 'meta-models/muse-spark-open-1026', 'url': 'https://inference.baseten.co/v1/chat/completions', 'missing': missing}
 
-def configured():
-    return bool(runtime()['key'])
+def _runtime_token():
+    stamps = []
+    for path in ENV_PATHS:
+        try:
+            stamps.append(path.stat().st_mtime_ns if path.is_file() else 0)
+        except OSError:
+            stamps.append(0)
+    return (tuple(stamps), tuple(os.environ.get(name, '') for name in _ENV_NAMES))
+
+def runtime():
+    token = _runtime_token()
+    if _RUNTIME_CACHE['token'] != token:
+        _RUNTIME_CACHE['token'] = token
+        _RUNTIME_CACHE['value'] = _load_runtime()
+    return dict(_RUNTIME_CACHE['value'])
 
 def call_cost(usage):
     if not isinstance(usage, dict):
@@ -82,13 +108,27 @@ def _post(payload, conf):
         headers={'Authorization': f'Bearer {conf["key"]}', 'Content-Type': 'application/json'},
         method='POST',
     )
+    started = time.perf_counter()
     try:
         with urlopen(request, timeout=90, context=ssl_context()) as response:
-            return json.load(response)
+            body = json.load(response)
     except HTTPError as error:
+        log.warning('%s returned HTTP %s', conf['label'], error.code)
         raise ModelError(f'{conf["label"]} returned HTTP {error.code}. The attempt was not changed. Retry the diagnosis.') from None
     except (URLError, TimeoutError, json.JSONDecodeError):
+        log.warning('%s did not respond', conf['label'])
         raise ModelError(f'{conf["label"]} did not respond. The attempt was not changed. Retry the diagnosis.') from None
+    usage = body.get('usage') if isinstance(body, dict) else {}
+    if not isinstance(usage, dict):
+        usage = {}
+    log.info(
+        '%s responded in %dms in=%s out=%s',
+        conf['label'],
+        int((time.perf_counter() - started) * 1000),
+        usage.get('input_tokens', usage.get('prompt_tokens')),
+        usage.get('output_tokens', usage.get('completion_tokens')),
+    )
+    return body
 
 def _read_choice(raw):
     choice = raw['choices'][0]
@@ -131,6 +171,76 @@ def card_messages(question, answer):
         'Return one JSON object with keys card, quote, abstain_when. card is one or two sentences. abstain_when says when not to apply it.'
     )
     return [{'role': 'system', 'content': system}, {'role': 'user', 'content': json.dumps({'question': question, 'expert_answer': answer}, ensure_ascii=False)}]
+
+ATTACK_CONDITIONS = ('wrong_certificate', 'missing_certificate', 'lookalike_revision')
+ATTACK_FIELDS = ('supplier', 'ordered_part', 'offered_part', 'machine_revision', 'certificate', 'quantity')
+
+
+def attack_messages(card, used_orders):
+    system = (
+        'Propose synthetic purchasing orders that could make a successor misapply one approved card. '
+        'Use only the card and the orders already seen. Do not state a correct action, a hidden company rule, or an expected outcome. '
+        'Return one JSON object with key attacks. attacks has two or three objects. '
+        'Each object has keys condition, facts, note. '
+        'condition is wrong_certificate, missing_certificate, or lookalike_revision, and each condition appears at most once. '
+        'facts has supplier, ordered_part, offered_part, machine_revision, certificate, quantity. '
+        'certificate is a string or null. machine_revision is a string. quantity is an integer from 1 to 999. '
+        'For wrong_certificate, certificate is a non-empty string. '
+        'For missing_certificate, certificate is null. '
+        'For lookalike_revision, certificate is a non-empty string and machine_revision differs from the revision the card allows. '
+        'note is one sentence naming the condition under test. Do not include an action.'
+    )
+    payload = {'card': card, 'used_orders': used_orders}
+    return [{'role': 'system', 'content': system}, {'role': 'user', 'content': json.dumps(payload, ensure_ascii=False)}]
+
+
+def _plain(value, label):
+    if not isinstance(value, str) or not value.strip() or len(value.strip()) > 80:
+        raise ModelError(f'The attack returned an unusable {label}. Nothing was saved.')
+    return value.strip()
+
+
+def parse_attacks(content):
+    data = _object(content)
+    attacks = data.get('attacks')
+    if not isinstance(attacks, list) or not 2 <= len(attacks) <= 3:
+        raise ModelError('The attack did not return two or three orders. Nothing was saved.')
+    found = []
+    seen = set()
+    for item in attacks:
+        if not isinstance(item, dict) or any(key in item for key in ('action', 'expected', 'expected_action', 'graded_action')):
+            raise ModelError('The attack included an outcome. Nothing was saved.')
+        condition, facts, note = item.get('condition'), item.get('facts'), item.get('note')
+        if condition not in ATTACK_CONDITIONS or condition in seen:
+            raise ModelError('The attack used an unknown or repeated condition. Nothing was saved.')
+        seen.add(condition)
+        if not isinstance(facts, dict) or set(facts) != set(ATTACK_FIELDS):
+            raise ModelError('The attack returned order fields that cannot be graded. Nothing was saved.')
+        if not isinstance(note, str) or not note.strip() or len(note.strip()) > 300:
+            raise ModelError('The attack did not name the condition under test. Nothing was saved.')
+        quantity = facts.get('quantity')
+        if isinstance(quantity, str) and quantity.isdigit():
+            quantity = int(quantity)
+        if isinstance(quantity, bool) or not isinstance(quantity, int) or not 1 <= quantity <= 999:
+            raise ModelError('The attack returned an unusable quantity. Nothing was saved.')
+        certificate = facts.get('certificate')
+        if condition == 'missing_certificate':
+            if certificate is not None:
+                raise ModelError('The missing-certificate attack included a certificate. Nothing was saved.')
+            certificate = None
+        else:
+            certificate = _plain(certificate, 'certificate')
+        cleaned = {
+            'supplier': _plain(facts.get('supplier'), 'supplier'),
+            'ordered_part': _plain(facts.get('ordered_part'), 'ordered part'),
+            'offered_part': _plain(facts.get('offered_part'), 'offered part'),
+            'machine_revision': _plain(facts.get('machine_revision'), 'machine revision'),
+            'certificate': certificate,
+            'quantity': quantity,
+        }
+        found.append({'condition': condition, 'facts': cleaned, 'note': note.strip()})
+    return found
+
 
 def recommend_messages(case, documents):
     system = (
