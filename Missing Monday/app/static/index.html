@@ -1,8 +1,215 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Missing Monday — Rehearsal</title><link rel="stylesheet" href="/app.css"><script src="/app.js" defer></script></head><body>
-<header><a href="/" class="brand"><span class="mark">m.</span> Missing Monday</a><span class="pill">LOCAL WORKSPACE</span></header>
-<main><div class="eyebrow">ALDER WORKS / PURCHASING</div><section class="intro"><div><h1>Could you finish this<br>without calling Morgan?</h1><p>You’re covering purchasing at Alder Works.<br>Use the available evidence. Make the next step explicit.</p></div><aside class="status"><span class="dot"></span> Synthetic rehearsal<p>No real orders are sent.<br><span id="model-note">Checking model access.</span></p></aside></section>
-<div class="steps" id="stages"><span data-stage="rehearse"><b>01</b> Rehearse</span><span data-stage="capture"><b>02</b> Capture</span><span data-stage="retest"><b>03</b> Retest</span></div>
-<div id="error" role="alert" hidden></div><div class="toolbar"><div><label for="case">Practice case</label><select id="case"></select></div><button id="start">Start a fresh attempt ↗</button><button id="new" class="secondary">New session</button></div>
-<div class="grid"><section class="panel"><div class="eyebrow">YOUR WORKBENCH</div><h2 id="title">Ready for Monday?</h2><p id="empty">Start a practice case to see which decisions the handbook supports.</p><p id="mission" class="note" hidden>Check the order and the available guidance. Decide whether you can proceed, need evidence, or need the expert.</p><p id="fresh" class="note" hidden></p><dl id="facts"></dl><div id="evidence-list"></div><section id="document" class="note" hidden><h3 id="document-title"></h3><ul id="document-content"></ul></section><form id="decision" hidden><div id="checkpoint" class="note"></div><fieldset id="citations"><legend>Which sources support your next step?</legend></fieldset><label for="reason">Your reasoning, or the precise question you cannot answer</label><p id="draft-status" class="muted" aria-live="polite"></p><textarea id="reason" required maxlength="2000" placeholder="Describe the evidence you have, or the information you need."></textarea><label for="action">Your next action</label><select id="action"><option value="ask_expert">I need the expert</option><option value="accept">Accept the order</option><option value="reject">Reject the order</option><option value="request_evidence">Request missing evidence</option><option value="escalate">Escalate for review</option><option value="report_permission_issue">Report an access issue</option></select><label id="category-label" for="category">If blocked, what is missing?</label><select id="category"><option value="knowledge">A rule or expert judgment</option><option value="missing_case_data">Evidence or case information</option><option value="permission">Access or permission</option><option value="tool_failure">A working tool</option><option value="ambiguous_task">A clear task</option><option value="unknown">Not sure yet</option></select><button type="button" id="suggest" class="secondary">Suggest the next step</button><button type="button" id="diagnose" class="secondary">Diagnose why this stalled</button><button id="save">Save my next step</button></form><section id="diagnosis" class="note" hidden></section><div id="result" aria-live="polite"></div><section id="gap-panel" hidden><h3>What still needs an answer</h3><p class="muted">Recorded from the successor’s question. No model diagnosis has been run.</p><div id="gaps"></div></section><section id="capture" hidden><div class="eyebrow">PLAYING MORGAN</div><h3>What condition is missing?</h3><p class="muted">Type what you know. Draft the card asks Baseten to quote you. Approve publishes that exact wording. An edit must be approved again. The model cannot approve its own card.</p><p id="review-note" class="muted"></p><p id="capture-question"></p><label for="expert-answer">Expert answer</label><textarea id="expert-answer" maxlength="2000" placeholder="State the condition, the exception, and what evidence is required."></textarea><div class="row-actions"><button type="button" id="draft" class="secondary">Draft the card</button><button type="button" id="approve">Approve this version</button><button type="button" id="reject" class="secondary">Reject</button><button type="button" id="unknown" class="secondary">I don't know</button></div></section></section>
-<aside class="panel handbook"><div class="eyebrow">AVAILABLE KNOWLEDGE</div><h2>The existing handbook</h2><p id="guidance-count" class="muted">Version 1 · No expert-approved guidance yet</p><ol id="handbook"></ol><div class="note">A missing rule is a useful finding. Ask for help instead of guessing.</div></aside></div>
-<section class="panel bottom"><div><div class="eyebrow">THIS SESSION</div><h2>Evidence, not confidence.</h2><p class="muted">Practice outcomes only. These are not fresh transfer tests or a measure of captured expertise.</p></div><div id="summary" class="metrics"></div></section><section class="panel history"><h2>Attempt history</h2><p class="muted">Open any attempt to inspect its evidence trail. Past attempts remain saved.</p><div id="history"></div><div id="timeline"></div></section><footer>Missing Monday · Synthetic rehearsal · All company and order data is fictional.</footer></main></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#F5F5F7">
+  <title>Missing Monday — Rehearsal</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/app.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+    <symbol id="ic-check" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 10.2l2.4 2.4L13.5 8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="ic-warn" viewBox="0 0 20 20"><path d="M10 3.2L17.8 16.2a1 1 0 01-.86 1.5H3.06a1 1 0 01-.86-1.5L10 3.2z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M10 8v4M10 14.5h.02" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="ic-x" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M7 7l6 6M13 7l-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  </svg>
+  <a class="skip" href="#workbench">Skip to the workbench</a>
+  <div id="activity" aria-hidden="true"></div>
+  <header class="mast">
+    <div class="mast-inner">
+      <a href="/" class="brand"><span class="mark" aria-hidden="true">m.</span> Missing Monday</a>
+      <div class="mast-side">
+        <p id="model-note">Checking model access.</p>
+        <span class="pill">Local workspace</span>
+      </div>
+    </div>
+  </header>
+  <main>
+    <p class="eyebrow">Alder Works · Purchasing</p>
+    <section class="intro">
+      <div>
+        <h1>Could you finish this<br>without calling Morgan?</h1>
+        <p>You’re covering purchasing at Alder Works.<br>Use the available evidence. Make the next step explicit.</p>
+      </div>
+      <aside class="status">
+        <span class="dot" aria-hidden="true"></span> Synthetic rehearsal
+        <p>No real orders are sent. Alex and Morgan are fictional. Decisions stay in this browser’s session.</p>
+      </aside>
+    </section>
+    <div class="steps" id="stages" aria-label="Rehearsal stages">
+      <span data-stage="rehearse"><b>01</b> Rehearse</span>
+      <span data-stage="capture"><b>02</b> Capture</span>
+      <span data-stage="retest"><b>03</b> Retest</span>
+      <span data-stage="attack"><b>04</b> Attack</span>
+    </div>
+    <div id="error" role="alert" tabindex="-1" hidden></div>
+    <div class="toolbar">
+      <div>
+        <label for="case">Practice case</label>
+        <select id="case"></select>
+      </div>
+      <button id="start" type="button" disabled>Start a fresh attempt</button>
+      <button id="new" class="secondary" type="button" disabled>New session</button>
+    </div>
+    <div class="grid">
+      <section class="panel panel--workbench" id="workbench" tabindex="-1">
+        <div id="toasts" aria-live="polite" aria-atomic="true"></div>
+        <div id="boot" class="boot" aria-hidden="true">
+          <div class="sk sk-title"></div>
+          <div class="sk"></div>
+          <div class="sk short"></div>
+        </div>
+        <div class="wb-head">
+          <p class="eyebrow">Playing Alex</p>
+          <h2 id="title">Ready for Monday?</h2>
+          <p id="case-title" class="kicker" hidden></p>
+          <p id="empty" hidden>Start a practice case to see which decisions the handbook supports.</p>
+          <p id="mission" class="note note--mission" hidden>Check the order and the available guidance. Decide whether you can proceed, need evidence, or need the expert.</p>
+          <p id="fresh" class="note" hidden></p>
+        </div>
+        <!-- Step 1: Inspect -->
+        <section class="wb-step" data-wb-step="1" aria-labelledby="wb-step1-title">
+          <div class="wb-step-head">
+            <span class="wb-step-num" aria-hidden="true">1</span>
+            <div class="wb-step-titles">
+              <h3 id="wb-step1-title" class="wb-step-title">Inspect evidence</h3>
+              <p class="wb-step-sub">Open the sources to see what you actually have.</p>
+            </div>
+            <span class="wb-step-badge">Evidence</span>
+          </div>
+          <dl id="facts"></dl>
+          <div id="evidence-list" class="evidence-stack"></div>
+          <section id="document" class="sheet wb-document" hidden>
+            <h3 id="document-title"></h3>
+            <ul id="document-content"></ul>
+          </section>
+        </section>
+        <!-- Steps 2 & 3 share one form so save submits reasoning + action together (behavior preserved) -->
+        <form id="decision" hidden>
+          <section class="wb-step" data-wb-step="2" aria-labelledby="wb-step2-title">
+            <div class="wb-step-head">
+              <span class="wb-step-num" aria-hidden="true">2</span>
+              <div class="wb-step-titles">
+                <h3 id="wb-step2-title" class="wb-step-title">Explain your reasoning</h3>
+                <p class="wb-step-sub">State what you know — or the exact question you cannot answer.</p>
+              </div>
+              <span class="wb-step-badge">Reasoning</span>
+            </div>
+            <div id="checkpoint" class="note note--checkpoint"></div>
+            <fieldset id="citations">
+              <legend>Which opened sources support your next step?</legend>
+            </fieldset>
+            <label for="reason">Your reasoning, or the precise question you cannot answer</label>
+            <p id="draft-status" class="muted" aria-live="polite"></p>
+            <textarea id="reason" required maxlength="2000" autocomplete="off" placeholder="Describe the evidence you have, or the information you need."></textarea>
+            <div class="assist">
+              <button type="button" id="suggest" class="secondary wb-assist-btn">Suggest the next step</button>
+              <button type="button" id="diagnose" class="secondary wb-assist-btn">Diagnose why this stalled</button>
+            </div>
+            <p id="assist-note" class="muted">Diagnose and suggest do not save a decision or approve a card.</p>
+          </section>
+          <section class="wb-step wb-step--action" data-wb-step="3" aria-labelledby="wb-step3-title">
+            <div class="wb-step-head">
+              <span class="wb-step-num wb-step-num--accent" aria-hidden="true">3</span>
+              <div class="wb-step-titles">
+                <h3 id="wb-step3-title" class="wb-step-title">Choose action</h3>
+                <p class="wb-step-sub">Pick the next step the evidence supports.</p>
+              </div>
+              <span class="wb-step-badge wb-step-badge--accent">Decision</span>
+            </div>
+            <div class="wb-action-form">
+              <label for="action">Your next action</label>
+              <select id="action">
+                <option value="ask_expert">I need the expert</option>
+                <option value="accept">Accept the order</option>
+                <option value="reject">Reject the order</option>
+                <option value="request_evidence">Request missing evidence</option>
+                <option value="escalate">Escalate for review</option>
+                <option value="report_permission_issue">Report an access issue</option>
+              </select>
+              <label id="category-label" for="category">If blocked, what is missing?</label>
+              <select id="category">
+                <option value="knowledge">A rule or expert judgment</option>
+                <option value="missing_case_data">Evidence or case information</option>
+                <option value="permission">Access or permission</option>
+                <option value="tool_failure">A working tool</option>
+                <option value="ambiguous_task">A clear task</option>
+                <option value="unknown">Not sure yet</option>
+              </select>
+              <button id="save" type="submit" class="wb-primary">Save my next step</button>
+              <p class="wb-save-hint muted">This records your decision for grading. You can still revise before the result.</p>
+            </div>
+          </section>
+        </form>
+        <section id="diagnosis" class="note" hidden></section>
+        <div id="result" aria-live="polite"></div>
+        <section id="gap-panel" hidden>
+          <h3>What still needs an answer</h3>
+          <p class="muted">Recorded from the successor’s question. A diagnosis does not approve anything.</p>
+          <div id="gaps"></div>
+        </section>
+        <section id="capture" hidden>
+          <p class="eyebrow">Playing Morgan</p>
+          <h3>What condition is missing?</h3>
+          <p class="muted">Type what you know. Draft the card quotes your answer. Approve publishes that exact wording. An edit must be approved again. The model cannot approve its own card.</p>
+          <p id="review-note" class="muted" aria-live="polite"></p>
+          <p class="muted">Focused question</p>
+          <p id="capture-question"></p>
+          <label for="expert-answer">Expert answer</label>
+          <textarea id="expert-answer" maxlength="2000" autocomplete="off" placeholder="State the condition, the exception, and what evidence is required."></textarea>
+          <div class="row-actions">
+            <button type="button" id="draft" class="secondary">Draft the card</button>
+            <button type="button" id="approve">Approve this version</button>
+            <button type="button" id="reject" class="secondary">Reject</button>
+            <button type="button" id="unknown" class="secondary">I don't know</button>
+            <button type="button" id="premise" class="secondary">Scenario is unrealistic</button>
+          </div>
+        </section>
+      </section>
+      <aside class="panel handbook">
+        <p class="eyebrow">Available knowledge</p>
+        <h2>The existing handbook</h2>
+        <div class="spend">
+          <div class="spend-row">
+            <span>Model budget</span>
+            <span id="spend-label">$0.00 of $5</span>
+          </div>
+          <div class="spend-track" id="spend-meter" role="meter" aria-label="Model spend" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0">
+            <div id="spend-fill" class="spend-fill p0"></div>
+          </div>
+          <p id="spend-note" class="muted">Calls stop at $5. A failed call does not change the attempt.</p>
+        </div>
+        <p id="guidance-count" class="muted">Version 1 · No expert-approved guidance yet</p>
+        <ol id="handbook"></ol>
+        <div class="note">A missing rule is a useful finding. Ask for help instead of guessing.</div>
+      </aside>
+    </div>
+    <section class="panel" id="attack-panel">
+      <p class="eyebrow">Break the card</p>
+      <h2 id="attack-title">Can this card survive a harder order?</h2>
+      <p id="attack-note" class="muted">Approve a substitution card first. Then the model will invent orders that try to break it.</p>
+      <button id="attack" type="button" class="secondary">Break the card</button>
+      <div id="attacks" aria-live="polite"></div>
+    </section>
+    <section class="panel bottom">
+      <div>
+        <p class="eyebrow">This session</p>
+        <h2>Evidence, not confidence.</h2>
+        <p id="summary-note" class="muted">No transfer tests completed yet.</p>
+      </div>
+      <div id="summary" class="metrics"></div>
+    </section>
+    <section class="panel history">
+      <h2>Attempt history</h2>
+      <p class="muted">Open any attempt to inspect its evidence trail. Past attempts remain saved.</p>
+      <div id="history"></div>
+      <div id="timeline"></div>
+    </section>
+    <footer>Missing Monday · Synthetic rehearsal · Alder Works, Alex, and Morgan are fictional. No orders are sent.</footer>
+  </main>
+  <noscript><p class="noscript">Missing Monday needs JavaScript for this local rehearsal.</p></noscript>
+</body>
+</html>
